@@ -1,0 +1,240 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>JARVIS AI Assistant</title>
+
+<style>
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: #080d18;
+  color: #e9f5ff;
+  font-family: Arial, sans-serif;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+}
+
+.container {
+  width: 100%;
+  max-width: 430px;
+  text-align: center;
+  padding: 30px 20px;
+  border: 1px solid #174b68;
+  border-radius: 22px;
+  background: #101c2b;
+  box-shadow: 0 0 35px #063b57;
+}
+
+h1 {
+  color: #42d9ff;
+  letter-spacing: 5px;
+  font-size: 32px;
+}
+
+.subtitle {
+  color: #91aabd;
+  font-size: 12px;
+  letter-spacing: 3px;
+}
+
+.reactor {
+  width: 145px;
+  height: 145px;
+  margin: 35px auto;
+  border: 3px solid #42d9ff;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 25px #087fae;
+  font-size: 48px;
+}
+
+.listening {
+  animation: pulse 1.2s infinite;
+}
+
+@keyframes pulse {
+  50% {
+    box-shadow: 0 0 55px #42d9ff;
+    transform: scale(1.06);
+  }
+}
+
+#status {
+  color: #42d9ff;
+  margin: 20px 0;
+  font-weight: bold;
+}
+
+#output {
+  min-height: 65px;
+  padding: 15px;
+  background: #08121e;
+  border-radius: 12px;
+  color: #fff;
+  overflow-wrap: anywhere;
+}
+
+button, select {
+  width: 100%;
+  padding: 15px;
+  margin-top: 15px;
+  border: 0;
+  border-radius: 10px;
+  font-size: 16px;
+}
+
+button {
+  background: #13bce9;
+  color: #04121c;
+  font-weight: bold;
+}
+
+button:active {
+  transform: scale(.98);
+}
+
+select {
+  background: #172a3b;
+  color: white;
+}
+</style>
+</head>
+
+<body>
+<div class="container">
+
+  <div class="subtitle">STARK INDUSTRIES · AI SYSTEM</div>
+  <h1>J.A.R.V.I.S.</h1>
+  <div class="subtitle">PERSONAL VOICE ASSISTANT</div>
+
+  <div class="reactor" id="reactor">◉</div>
+
+  <div id="status">SYSTEM STANDBY</div>
+
+  <select id="language">
+    <option value="hi-IN">Hindi + English</option>
+    <option value="en-IN">English India</option>
+    <option value="en-US">English US</option>
+  </select>
+
+  <div id="output">JARVIS is ready. Press Activate and speak.</div>
+
+  <button id="activate" onclick="startListening()">
+    🎙 ACTIVATE JARVIS
+  </button>
+
+  <button onclick="stopListening()" style="background:#26394b;color:white">
+    STOP LISTENING
+  </button>
+
+</div>
+
+<script>
+let recognition;
+let listening = false;
+
+const statusBox = document.getElementById("status");
+const output = document.getElementById("output");
+const reactor = document.getElementById("reactor");
+
+function speak(message) {
+  if (!("speechSynthesis" in window)) {
+    output.textContent = message;
+    return;
+  }
+
+  window.speechSynthesis.cancel();
+
+  const speech = new SpeechSynthesisUtterance(message);
+  speech.lang = document.getElementById("language").value;
+  speech.rate = 0.95;
+
+  window.speechSynthesis.speak(speech);
+}
+
+function startListening() {
+  const SpeechRecognition =
+    window.SpeechRecognition ||
+    window.webkitSpeechRecognition;
+
+  if (!SpeechRecognition) {
+    statusBox.textContent = "VOICE NOT SUPPORTED";
+    output.textContent =
+      "Please open this website in Google Chrome.";
+    return;
+  }
+
+  if (!navigator.mediaDevices) {
+    statusBox.textContent = "MICROPHONE UNAVAILABLE";
+    output.textContent =
+      "Please use a secure HTTPS website in Chrome.";
+    return;
+  }
+
+  if (listening) return;
+
+  recognition = new SpeechRecognition();
+  recognition.lang = document.getElementById("language").value;
+  recognition.continuous = false;
+  recognition.interimResults = false;
+
+  recognition.onstart = function() {
+    listening = true;
+    statusBox.textContent = "LISTENING...";
+    reactor.classList.add("listening");
+  };
+
+  recognition.onresult = function(event) {
+    const command = event.results[0][0].transcript;
+
+    output.textContent = "YOU: " + command;
+
+    const reply =
+      "Your microphone is working. JARVIS voice test successful.";
+
+    statusBox.textContent = "VOICE TEST SUCCESSFUL";
+    output.textContent += "\nJARVIS: " + reply;
+
+    speak(reply);
+  };
+
+  recognition.onerror = function(event) {
+    statusBox.textContent = "VOICE ERROR: " + event.error;
+    output.textContent =
+      "Check Chrome microphone permissions and try again.";
+  };
+
+  recognition.onend = function() {
+    listening = false;
+    reactor.classList.remove("listening");
+  };
+
+  try {
+    recognition.start();
+  } catch(error) {
+    listening = false;
+    statusBox.textContent = "START ERROR";
+    output.textContent = error.message;
+  }
+}
+
+function stopListening() {
+  if (recognition) recognition.stop();
+
+  listening = false;
+  reactor.classList.remove("listening");
+  statusBox.textContent = "SYSTEM STANDBY";
+}
+</script>
+</body>
+  </html>
+  
