@@ -365,6 +365,7 @@ function speak(message) {
 setTimeout(() => {
   synth.speak(utterance);
 }, 200);
+}
 
 function getReply(command) {
   const text = command.toLowerCase().trim();
