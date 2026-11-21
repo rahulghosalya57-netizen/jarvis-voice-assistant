@@ -507,15 +507,18 @@ async function activate() {
   }
 }
 
+
 async function stopListening() {
   try {
     await NativeSpeechRecognition.stop();
   } catch (error) {
-    console.log("Stop:", error);
+    console.log("Recognition stop:", error);
   }
 
-  if ("speechSynthesis" in window) {
-    window.speechSynthesis.cancel();
+  try {
+    await TextToSpeech.stop();
+  } catch (error) {
+    console.log("TTS stop:", error);
   }
 
   isRecognizing = false;
@@ -523,29 +526,7 @@ async function stopListening() {
 
   setStatus("SYSTEM STANDBY");
 }
-
-activateButton.addEventListener("click", activate);
-
-stopButton.addEventListener("click", stopListening);
-
-testButton.addEventListener("click", () => {
-  speak(
-    "Hello sir. I am JARVIS, your personal AI assistant. All systems are online."
-  );
-});
-
-languageSelect.addEventListener("change", () => {
-  setStatus("LANGUAGE: " + languageSelect.value);
-});
-
-if ("speechSynthesis" in window) {
-  loadVoices();
-
-  window.speechSynthesis.onvoiceschanged = loadVoices;
-}
-
-setStatus("SYSTEM STANDBY");
-
+  
 </script>
 </body>
 </html>
