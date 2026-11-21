@@ -313,31 +313,39 @@ function loadVoices() {
   }
 }
 
+
 function speak(message) {
   output.textContent = message;
 
   if (!("speechSynthesis" in window)) {
-    setStatus("TEXT READY — SPEECH OUTPUT UNAVAILABLE");
+    setStatus("TEXT READY — SPEECH NOT SUPPORTED");
     return;
   }
 
-  window.speechSynthesis.cancel();
+  const synth = window.speechSynthesis;
+
+  synth.cancel();
 
   const utterance = new SpeechSynthesisUtterance(message);
 
-  const selectedIndex = voiceSelect.value;
-
-  if (
-    selectedIndex !== "" &&
-    voices[Number(selectedIndex)]
-  ) {
-    utterance.voice = voices[Number(selectedIndex)];
-  }
-
-  utterance.lang = languageSelect.value;
+  utterance.lang = languageSelect.value || "en-IN";
   utterance.rate = 0.9;
   utterance.pitch = 0.9;
   utterance.volume = 1;
+
+  const selectedIndex = voiceSelect.value;
+
+  if (selectedIndex !== "" && voices[Number(selectedIndex)]) {
+    utterance.voice = voices[Number(selectedIndex)];
+  } else {
+    const preferred = voices.find(v =>
+      v.lang.toLowerCase().startsWith(
+        utterance.lang.split("-")[0].toLowerCase()
+      )
+    );
+
+    if (preferred) utterance.voice = preferred;
+  }
 
   utterance.onstart = () => {
     setStatus("JARVIS SPEAKING...");
@@ -347,12 +355,14 @@ function speak(message) {
     setStatus("SYSTEM STANDBY");
   };
 
-  utterance.onerror = () => {
-    setStatus("VOICE OUTPUT ERROR");
+  utterance.onerror = (event) => {
+    setStatus("TTS ERROR: " + event.error);
+    output.textContent = "Speech error: " + event.error;
   };
 
-  window.speechSynthesis.speak(utterance);
+  synth.speak(utterance);
 }
+  
 
 function getReply(command) {
   const text = command.toLowerCase().trim();
