@@ -1,279 +1,830 @@
-
+   
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>JARVIS AI Assistant</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#080f19">
+  <title>J.A.R.V.I.S. — Voice Assistant</title>
 
-<style>
-* { box-sizing: border-box; }
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #080f19;
+      --panel: #101d2b;
+      --cyan: #39d9ff;
+      --muted: #91a8b9;
+      --line: rgba(57,217,255,.25);
+    }
 
-body {
-  margin: 0;
-  min-height: 100vh;
-  background: #080d18;
-  color: #e9f5ff;
-  font-family: Arial, sans-serif;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: 20px;
-}
+    * { box-sizing: border-box; }
 
-.container {
-  width: 100%;
-  max-width: 430px;
-  text-align: center;
-  padding: 30px 20px;
-  border: 1px solid #174b68;
-  border-radius: 22px;
-  background: #101c2b;
-  box-shadow: 0 0 35px #063b57;
-}
+    body {
+      margin: 0;
+      min-height: 100vh;
+      padding: 24px 16px;
+      display: grid;
+      place-items: center;
+      color: #eaf8ff;
+      font-family: Arial, Helvetica, sans-serif;
+      background: radial-gradient(
+        circle at 50% 15%,
+        #16354a 0,
+        #0a1724 42%,
+        var(--bg) 78%
+      );
+    }
 
-h1 {
-  color: #42d9ff;
-  letter-spacing: 5px;
-  font-size: 32px;
-}
+    .app {
+      width: min(100%, 620px);
+      padding: 28px 22px;
+      border: 1px solid var(--line);
+      border-radius: 22px;
+      background: rgba(12, 25, 38, .94);
+      box-shadow: 0 0 45px rgba(0,190,255,.12);
+    }
 
-.subtitle {
-  color: #91aabd;
-  font-size: 12px;
-  letter-spacing: 3px;
-}
+    header { text-align: center; }
 
-.reactor {
-  width: 145px;
-  height: 145px;
-  margin: 35px auto;
-  border: 3px solid #42d9ff;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 0 25px #087fae;
-  font-size: 48px;
-}
+    .eyebrow {
+      color: var(--cyan);
+      letter-spacing: .28em;
+      font-size: 12px;
+    }
 
-.listening {
-  animation: pulse 1.2s infinite;
-}
+    h1 {
+      margin: 9px 0 5px;
+      letter-spacing: .12em;
+      font-size: clamp(27px, 7vw, 38px);
+    }
 
-@keyframes pulse {
-  50% {
-    box-shadow: 0 0 55px #42d9ff;
-    transform: scale(1.06);
-  }
-}
+    .sub {
+      color: var(--muted);
+      font-size: 13px;
+    }
 
-#status {
-  color: #42d9ff;
-  margin: 20px 0;
-  font-weight: bold;
-}
+    .reactor {
+      width: 116px;
+      height: 116px;
+      margin: 26px auto 18px;
+      border-radius: 50%;
+      border: 2px solid var(--cyan);
+      display: grid;
+      place-items: center;
+      box-shadow: 0 0 14px var(--cyan),
+        inset 0 0 20px rgba(57,217,255,.25);
+      transition: .2s;
+    }
 
-#output {
-  min-height: 65px;
-  padding: 15px;
-  background: #08121e;
-  border-radius: 12px;
-  color: #fff;
-  overflow-wrap: anywhere;
-}
+    .reactor span {
+      width: 68px;
+      height: 68px;
+      border-radius: 50%;
+      background: radial-gradient(
+        circle,
+        #eaffff 0,
+        #39d9ff 22%,
+        #087ca8 58%,
+        #092335 72%
+      );
+      box-shadow: 0 0 24px var(--cyan);
+    }
 
-button, select {
-  width: 100%;
-  padding: 15px;
-  margin-top: 15px;
-  border: 0;
-  border-radius: 10px;
-  font-size: 16px;
-}
+    .reactor.listening {
+      animation: pulse 1.1s infinite alternate;
+    }
 
-button {
-  background: #13bce9;
-  color: #04121c;
-  font-weight: bold;
-}
+    @keyframes pulse {
+      to {
+        transform: scale(1.08);
+        box-shadow: 0 0 28px var(--cyan),
+          inset 0 0 25px rgba(57,217,255,.45);
+      }
+    }
 
-button:active {
-  transform: scale(.98);
-}
+    .status {
+      text-align: center;
+      color: var(--cyan);
+      min-height: 22px;
+      font-size: 14px;
+    }
 
-select {
-  background: #172a3b;
-  color: white;
-}
-</style>
+    .panel {
+      margin-top: 18px;
+      padding: 15px;
+      border-radius: 13px;
+      background: var(--panel);
+      border: 1px solid rgba(255,255,255,.07);
+    }
+
+    .panel label {
+      display: block;
+      margin-bottom: 8px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    select, .transcript, .response {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 9px;
+      background: #091521;
+      color: #eaf8ff;
+      padding: 11px;
+      font-size: 14px;
+    }
+
+    select { margin-bottom: 14px; }
+
+    .transcript, .response {
+      min-height: 54px;
+      line-height: 1.5;
+      overflow-wrap: anywhere;
+    }
+
+    .response { color: #b8f2ff; }
+
+    .buttons {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 11px;
+      margin-top: 18px;
+    }
+
+    button {
+      border: 0;
+      border-radius: 10px;
+      padding: 14px 10px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    button:disabled {
+      opacity: .45;
+      cursor: not-allowed;
+    }
+
+    .primary {
+      background: var(--cyan);
+      color: #04131d;
+    }
+
+    .stop {
+      background: #26394b;
+      color: white;
+      border: 1px solid #496176;
+    }
+
+    .test {
+      grid-column: 1 / -1;
+      background: transparent;
+      color: var(--cyan);
+      border: 1px solid var(--line);
+    }
+
+    .hint {
+      margin: 18px 2px 0;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.6;
+    }
+
+    .hint strong { color: #d8f8ff; }
+
+    @media (max-width: 380px) {
+      .app { padding: 22px 15px; }
+    }
+  </style>
 </head>
 
 <body>
-<div class="container">
 
-  <div class="subtitle">STARK INDUSTRIES · AI SYSTEM</div>
-  <h1>J.A.R.V.I.S.</h1>
-  <div class="subtitle">PERSONAL VOICE ASSISTANT</div>
+  <main class="app">
 
-  <div class="reactor" id="reactor">◉</div>
+    <header>
+      <div class="eyebrow">PERSONAL VOICE SYSTEM</div>
+      <h1>J.A.R.V.I.S.</h1>
+      <div class="sub">
+        JUST A RATHER VERY INTELLIGENT SYSTEM
+      </div>
+    </header>
 
-  <div id="status">SYSTEM STANDBY</div>
-<select id="voiceSelect">
-  <option value="">Default Android voice</option>
-</select>
-  <select id="language">
-    <option value="hi-IN">Hindi + English</option>
-    <option value="en-IN">English India</option>
-    <option value="en-US">English US</option>
-  </select>
+    <div class="reactor" id="reactor">
+      <span></span>
+    </div>
 
-  <div id="output">JARVIS is ready. Press Activate and speak.</div>
+    <div class="status" id="status">
+      SYSTEM STANDBY
+    </div>
 
-  <button id="activate" onclick="startListening()">
-    🎙 ACTIVATE JARVIS
-  </button>
+    <section class="panel">
 
-  <button onclick="stopListening()" style="background:#26394b;color:white">
-    STOP LISTENING
-  </button>
+      <label for="language">
+        RECOGNITION LANGUAGE
+      </label>
 
-</div>
+      <select id="language">
+        <option value="hi-IN">Hindi (India)</option>
+        <option value="en-IN" selected>English (India)</option>
+        <option value="en-US">English (US)</option>
+      </select>
 
-<script>
-let recognition;
-let listening = false;
+      <label for="voiceSelect">
+        JARVIS VOICE
+      </label>
 
-const statusBox = document.getElementById("status");
-const output = document.getElementById("output");
-const reactor = document.getElementById("reactor");
+      <select id="voiceSelect">
+        <option value="">Default device voice</option>
+      </select>
 
+      <label>WHAT JARVIS HEARD</label>
 
-function loadVoices() {
-  const voices = window.speechSynthesis.getVoices();
-  const selector = document.getElementById("voiceSelect");
+      <div class="transcript" id="transcript">
+        Your recognized words will appear here.
+      </div>
 
-  selector.innerHTML = "";
+      <label style="margin-top:14px">
+        JARVIS RESPONSE
+      </label>
 
-  voices.forEach((voice, index) => {
-    const option = document.createElement("option");
-    option.value = index;
-    option.textContent = voice.name + " (" + voice.lang + ")";
-    selector.appendChild(option);
-  });
-}
+      <div class="response" id="output">
+        JARVIS is ready. Press Activate and speak.
+      </div>
 
-  const speech = new SpeechSynthesisUtterance(message);
-  const voices = window.speechSynthesis.getVoices();
-  const selected = document.getElementById("voiceSelect").value;
+      <div class="buttons">
 
-  if (selected !== "" && voices[selected]) {
-    speech.voice = voices[selected];
-  }
+        <button class="primary" id="activate" type="button">
+          🎙 ACTIVATE JARVIS
+        </button>
 
-  speech.lang = document.getElementById("language").value;
-  speech.rate = 0.88;
-  speech.pitch = 0.75;
-  speech.volume = 1;
+        <button class="stop" id="stop" type="button">
+          ■ STOP LISTENING
+        </button>
 
-  speech.onstart = () => {
-    statusBox.textContent = "JARVIS SPEAKING...";
-  };
+        <button class="test" id="test" type="button">
+          🔊 TEST JARVIS VOICE
+        </button>
 
-  speech.onend = () => {
-    statusBox.textContent = "SYSTEM ONLINE";
-  };
+      </div>
 
-  speech.onerror = (event) => {
-    statusBox.textContent = "SPEECH ERROR: " + event.error;
-  };
+    </section>
 
-  window.speechSynthesis.speak(speech);
-}
+    <p class="hint">
+      <strong>Try saying:</strong>
+      "Hello Jarvis", "What time is it?",
+      "Aaj ki date batao", "Open YouTube",
+      or "Search for artificial intelligence".
 
-window.speechSynthesis.onvoiceschanged = loadVoices;
-loadVoices();
+      <br><br>
 
-function testVoice() {
-  speak("Hello sir. I am JARVIS, your personal AI assistant. All systems are online.");
-  }
-  
-function startListening() {
-  const SpeechRecognition =
-    window.SpeechRecognition ||
-    window.webkitSpeechRecognition;
+      Voice recognition needs a supported browser,
+      internet connection in many browsers,
+      microphone permission, and an HTTPS website.
+    </p>
 
-  if (!SpeechRecognition) {
-    statusBox.textContent = "VOICE NOT SUPPORTED";
-    output.textContent =
-      "Please open this website in Google Chrome.";
-    return;
-  }
+  </main>
 
-  if (!navigator.mediaDevices) {
-    statusBox.textContent = "MICROPHONE UNAVAILABLE";
-    output.textContent =
-      "Please use a secure HTTPS website in Chrome.";
-    return;
-  }
+  <script>
+    (() => {
 
-  if (listening) return;
+      "use strict";
 
-  recognition = new SpeechRecognition();
-  recognition.lang = document.getElementById("language").value;
-  recognition.continuous = false;
-  recognition.interimResults = false;
+      const statusBox = document.getElementById("status");
+      const output = document.getElementById("output");
+      const transcriptBox = document.getElementById("transcript");
 
-  recognition.onstart = function() {
-    listening = true;
-    statusBox.textContent = "LISTENING...";
-    reactor.classList.add("listening");
-  };
+      const languageSelect = document.getElementById("language");
+      const voiceSelect = document.getElementById("voiceSelect");
 
-  recognition.onresult = function(event) {
-    const command = event.results[0][0].transcript;
+      const reactor = document.getElementById("reactor");
 
-    output.textContent = "YOU: " + command;
+      const activateButton = document.getElementById("activate");
+      const stopButton = document.getElementById("stop");
+      const testButton = document.getElementById("test");
 
-    const reply =
-      "Your microphone is working. JARVIS voice test successful.";
+      const SpeechRecognition =
+        window.SpeechRecognition ||
+        window.webkitSpeechRecognition;
 
-    statusBox.textContent = "VOICE TEST SUCCESSFUL";
-    output.textContent += "\nJARVIS: " + reply;
+      let recognition = null;
+      let shouldListen = false;
+      let isRecognizing = false;
+      let restartTimer = null;
+      let voices = [];
 
-    speak(reply);
-  };
+      function setStatus(message, listening = false) {
+        statusBox.textContent = message;
 
-  recognition.onerror = function(event) {
-    statusBox.textContent = "VOICE ERROR: " + event.error;
-    output.textContent =
-      "Check Chrome microphone permissions and try again.";
-  };
+        reactor.classList.toggle(
+          "listening",
+          listening
+        );
+      }
 
-  recognition.onend = function() {
-    listening = false;
-    reactor.classList.remove("listening");
-  };
+      function loadVoices() {
 
-  try {
-    recognition.start();
-  } catch(error) {
-    listening = false;
-    statusBox.textContent = "START ERROR";
-    output.textContent = error.message;
-  }
-}
-<button onclick="testVoice()">
-  🔊 TEST JARVIS VOICE
-</button>
-function stopListening() {
-  if (recognition) recognition.stop();
+        if (!("speechSynthesis" in window)) return;
 
-  listening = false;
-  reactor.classList.remove("listening");
-  statusBox.textContent = "SYSTEM STANDBY";
-}
-</script>
+        voices = window.speechSynthesis.getVoices() || [];
+
+        const previous = voiceSelect.value;
+
+        voiceSelect.innerHTML =
+          '<option value="">Default device voice</option>';
+
+        voices.forEach((voice, index) => {
+
+          const option = document.createElement("option");
+
+          option.value = String(index);
+
+          option.textContent =
+            `${voice.name} (${voice.lang})` +
+            `${voice.default ? " — Default" : ""}`;
+
+          voiceSelect.appendChild(option);
+
+        });
+
+        if (previous && voices[Number(previous)]) {
+          voiceSelect.value = previous;
+        }
+      }
+
+      function speak(message) {
+
+        output.textContent = message;
+
+        if (!("speechSynthesis" in window)) {
+
+          setStatus("TEXT READY — SPEECH OUTPUT NOT SUPPORTED");
+
+          return;
+        }
+
+        window.speechSynthesis.cancel();
+
+        const utterance =
+          new SpeechSynthesisUtterance(message);
+
+        const selectedIndex = voiceSelect.value;
+
+        if (
+          selectedIndex !== "" &&
+          voices[Number(selectedIndex)]
+        ) {
+
+          utterance.voice =
+            voices[Number(selectedIndex)];
+
+        } else {
+
+          const langPrefix =
+            languageSelect.value.split("-")[0].toLowerCase();
+
+          const preferred = voices.find(v =>
+            v.lang.toLowerCase().startsWith(langPrefix)
+          );
+
+          if (preferred) {
+            utterance.voice = preferred;
+          }
+        }
+
+        utterance.lang = languageSelect.value;
+        utterance.rate = 0.9;
+        utterance.pitch = 0.9;
+        utterance.volume = 1;
+
+        utterance.onstart = () => {
+          setStatus("JARVIS SPEAKING...");
+        };
+
+        utterance.onend = () => {
+
+          if (shouldListen) {
+            scheduleRestart();
+          } else {
+            setStatus("SYSTEM STANDBY");
+          }
+        };
+
+        utterance.onerror = () => {
+
+          if (shouldListen) {
+            scheduleRestart();
+          } else {
+            setStatus("VOICE OUTPUT ERROR");
+          }
+        };
+
+        window.speechSynthesis.speak(utterance);
+      }
+
+      function getReply(command) {
+
+        const text = command.toLowerCase().trim();
+
+        if (
+          /\b(hello|hi|hey|namaste|नमस्ते|हेलो)\b/.test(text)
+        ) {
+          return "Hello sir. JARVIS is online. How may I help you?";
+        }
+
+        if (
+          text.includes("time") ||
+          text.includes("समय") ||
+          text.includes("kitne baje")
+        ) {
+
+          return "The time is " +
+            new Date().toLocaleTimeString(
+              languageSelect.value,
+              {
+                hour: "numeric",
+                minute: "2-digit"
+              }
+            );
+        }
+
+        if (
+          text.includes("date") ||
+          text.includes("today") ||
+          text.includes("तारीख") ||
+          text.includes("आज")
+        ) {
+
+          return "Today is " +
+            new Date().toLocaleDateString(
+              languageSelect.value,
+              {
+                weekday: "long",
+                year: "numeric",
+                month: "long",
+                day: "numeric"
+              }
+            );
+        }
+
+        if (
+          text.includes("open youtube") ||
+          text.includes("youtube kholo")
+        ) {
+
+          window.open(
+            "https://www.youtube.com/",
+            "_blank",
+            "noopener"
+          );
+
+          return "Opening YouTube.";
+        }
+
+        if (
+          text.includes("open google") ||
+          text.includes("google kholo")
+        ) {
+
+          window.open(
+            "https://www.google.com/",
+            "_blank",
+            "noopener"
+          );
+
+          return "Opening Google.";
+        }
+
+        if (text.startsWith("search for ")) {
+
+          const query = command.slice(11).trim();
+
+          if (query) {
+
+            window.open(
+              "https://www.google.com/search?q=" +
+              encodeURIComponent(query),
+              "_blank",
+              "noopener"
+            );
+          }
+
+          return query
+            ? "Searching Google for " + query
+            : "Please tell me what to search for.";
+        }
+
+        if (text.startsWith("search ")) {
+
+          const query = command.slice(7).trim();
+
+          if (query) {
+
+            window.open(
+              "https://www.google.com/search?q=" +
+              encodeURIComponent(query),
+              "_blank",
+              "noopener"
+            );
+          }
+
+          return query
+            ? "Searching Google for " + query
+            : "Please tell me what to search for.";
+        }
+
+        if (
+          text.includes("your name") ||
+          text.includes("who are you")
+        ) {
+
+          return "I am JARVIS, your personal voice assistant.";
+        }
+
+        return "I heard you say: " + command +
+          ". I am listening for your next command.";
+      }
+
+      function scheduleRestart() {
+
+        clearTimeout(restartTimer);
+
+        if (!shouldListen) return;
+
+        restartTimer = setTimeout(
+          startRecognition,
+          500
+        );
+      }
+
+      function startRecognition() {
+
+        if (
+          !shouldListen ||
+          !SpeechRecognition ||
+          isRecognizing
+        ) {
+          return;
+        }
+
+        try {
+
+          recognition = new SpeechRecognition();
+
+          recognition.lang = languageSelect.value;
+          recognition.continuous = false;
+          recognition.interimResults = true;
+          recognition.maxAlternatives = 1;
+
+          recognition.onstart = () => {
+
+            isRecognizing = true;
+
+            setStatus(
+              "LISTENING — SPEAK NOW",
+              true
+            );
+          };
+
+          recognition.onresult = event => {
+
+            let finalText = "";
+            let interimText = "";
+
+            for (
+              let i = event.resultIndex;
+              i < event.results.length;
+              i++
+            ) {
+
+              const piece =
+                event.results[i][0].transcript;
+
+              if (event.results[i].isFinal) {
+                finalText += piece;
+              } else {
+                interimText += piece;
+              }
+            }
+
+            if (interimText) {
+
+              transcriptBox.textContent = interimText;
+
+              setStatus(
+                "HEARING YOUR VOICE...",
+                true
+              );
+            }
+
+            if (finalText.trim()) {
+
+              const command = finalText.trim();
+
+              transcriptBox.textContent = command;
+
+              shouldListen = true;
+
+              try {
+                recognition.stop();
+              } catch (_) {}
+
+              speak(getReply(command));
+            }
+          };
+
+          recognition.onerror = event => {
+
+            isRecognizing = false;
+
+            const messages = {
+
+              "not-allowed":
+                "MICROPHONE BLOCKED — ALLOW MIC PERMISSION",
+
+              "service-not-allowed":
+                "SPEECH SERVICE BLOCKED",
+
+              "no-speech":
+                "NO SPEECH DETECTED — TRY AGAIN",
+
+              "audio-capture":
+                "MICROPHONE NOT FOUND",
+
+              "network":
+                "NETWORK ERROR — CHECK INTERNET"
+            };
+
+            const message =
+              messages[event.error] ||
+              ("VOICE ERROR: " + event.error);
+
+            setStatus(message);
+
+            if (
+              shouldListen &&
+              event.error !== "not-allowed" &&
+              event.error !== "service-not-allowed" &&
+              event.error !== "audio-capture"
+            ) {
+
+              scheduleRestart();
+
+            } else if (
+              event.error === "not-allowed" ||
+              event.error === "service-not-allowed" ||
+              event.error === "audio-capture"
+            ) {
+
+              shouldListen = false;
+            }
+          };
+
+          recognition.onend = () => {
+
+            isRecognizing = false;
+
+            if (
+              shouldListen &&
+              !window.speechSynthesis.speaking
+            ) {
+
+              scheduleRestart();
+
+            } else if (
+              !shouldListen &&
+              !window.speechSynthesis.speaking
+            ) {
+
+              setStatus("SYSTEM STANDBY");
+            }
+          };
+
+          recognition.start();
+
+        } catch (error) {
+
+          isRecognizing = false;
+
+          setStatus(
+            "START ERROR: " + error.message
+          );
+        }
+      }
+
+      function activate() {
+
+        if (!SpeechRecognition) {
+
+          setStatus(
+            "VOICE RECOGNITION NOT SUPPORTED"
+          );
+
+          output.textContent =
+            "Please open this HTTPS page in Google Chrome on Android.";
+
+          return;
+        }
+
+        if (!window.isSecureContext) {
+
+          setStatus("HTTPS REQUIRED");
+
+          output.textContent =
+            "Open this site using its https:// address.";
+
+          return;
+        }
+
+        shouldListen = true;
+
+        transcriptBox.textContent =
+          "Waiting for your voice...";
+
+        startRecognition();
+      }
+
+      function stopListening() {
+
+        shouldListen = false;
+
+        clearTimeout(restartTimer);
+
+        if (recognition && isRecognizing) {
+
+          try {
+            recognition.stop();
+          } catch (_) {}
+        }
+
+        isRecognizing = false;
+
+        if ("speechSynthesis" in window) {
+          window.speechSynthesis.cancel();
+        }
+
+        reactor.classList.remove("listening");
+
+        setStatus("SYSTEM STANDBY");
+      }
+
+      activateButton.addEventListener(
+        "click",
+        activate
+      );
+
+      stopButton.addEventListener(
+        "click",
+        stopListening
+      );
+
+      testButton.addEventListener(
+        "click",
+        () => {
+
+          speak(
+            "Hello sir. I am JARVIS, your personal AI assistant. All systems are online."
+          );
+        }
+      );
+
+      languageSelect.addEventListener(
+        "change",
+        () => {
+
+          if (shouldListen) {
+
+            stopListening();
+
+            activate();
+          }
+        }
+      );
+
+      if ("speechSynthesis" in window) {
+
+        loadVoices();
+
+        window.speechSynthesis.onvoiceschanged =
+          loadVoices;
+
+      } else {
+
+        testButton.disabled = true;
+      }
+
+      if (!SpeechRecognition) {
+
+        setStatus(
+          "VOICE RECOGNITION NOT SUPPORTED"
+        );
+
+        output.textContent =
+          "Use Google Chrome on Android and allow microphone access.";
+      }
+
+    })();
+  </script>
+
 </body>
   </html>
   
