@@ -360,9 +360,11 @@ function speak(message) {
     output.textContent = "Speech error: " + event.error;
   };
 
+  synth.resume();
+
+setTimeout(() => {
   synth.speak(utterance);
-}
-  
+}, 200);
 
 function getReply(command) {
   const text = command.toLowerCase().trim();
