@@ -314,58 +314,46 @@ function loadVoices() {
 }
 
 
+
 function speak(message) {
   output.textContent = message;
 
-  if (!("speechSynthesis" in window)) {
-    setStatus("TEXT READY — SPEECH NOT SUPPORTED");
-    return;
+  try {
+    const synth = window.speechSynthesis;
+
+    if (!synth || typeof SpeechSynthesisUtterance === "undefined") {
+      setStatus("TTS NOT AVAILABLE — CHECK DEVICE");
+      return;
+    }
+
+    synth.cancel();
+
+    const utterance = new SpeechSynthesisUtterance(message);
+
+    utterance.lang = languageSelect.value || "en-IN";
+    utterance.rate = 0.9;
+    utterance.pitch = 1;
+    utterance.volume = 1;
+
+    utterance.onstart = () => {
+      setStatus("SPEAKING...");
+    };
+
+    utterance.onend = () => {
+      setStatus("GREEN TICK — SPEECH COMPLETE");
+    };
+
+    utterance.onerror = (event) => {
+      setStatus("SPEECH ERROR: " + event.error);
+    };
+
+    synth.speak(utterance);
+
+  } catch (error) {
+    setStatus("TTS ERROR: " + error.message);
   }
-
-  const synth = window.speechSynthesis;
-
-  synth.cancel();
-
-  const utterance = new SpeechSynthesisUtterance(message);
-
-  utterance.lang = languageSelect.value || "en-IN";
-  utterance.rate = 0.9;
-  utterance.pitch = 0.9;
-  utterance.volume = 1;
-
-  const selectedIndex = voiceSelect.value;
-
-  if (selectedIndex !== "" && voices[Number(selectedIndex)]) {
-    utterance.voice = voices[Number(selectedIndex)];
-  } else {
-    const preferred = voices.find(v =>
-      v.lang.toLowerCase().startsWith(
-        utterance.lang.split("-")[0].toLowerCase()
-      )
-    );
-
-    if (preferred) utterance.voice = preferred;
-  }
-
-  utterance.onstart = () => {
-    setStatus("JARVIS SPEAKING...");
-  };
-
-  utterance.onend = () => {
-    setStatus("SYSTEM STANDBY");
-  };
-
-  utterance.onerror = (event) => {
-    setStatus("TTS ERROR: " + event.error);
-    output.textContent = "Speech error: " + event.error;
-  };
-
-  synth.resume();
-
-setTimeout(() => {
-  synth.speak(utterance);
-}, 200);
 }
+  
 
 function getReply(command) {
   const text = command.toLowerCase().trim();
