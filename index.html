@@ -266,7 +266,9 @@ speech recognition service and microphone permission.
 import {
   SpeechRecognition as NativeSpeechRecognition
 } from "@capacitor-community/speech-recognition";
-
+import {
+  TextToSpeech
+} from "@capacitor-community/text-to-speech";
 const statusBox = document.getElementById("status");
 const output = document.getElementById("output");
 const transcriptBox = document.getElementById("transcript");
@@ -315,42 +317,33 @@ function loadVoices() {
 
 
 
-function speak(message) {
+
+async function speak(message) {
   output.textContent = message;
+  setStatus("STARTING JARVIS VOICE...");
 
   try {
-    const synth = window.speechSynthesis;
+    await TextToSpeech.stop();
 
-    if (!synth || typeof SpeechSynthesisUtterance === "undefined") {
-      setStatus("TTS NOT AVAILABLE — CHECK DEVICE");
-      return;
-    }
+    await TextToSpeech.speak({
+      text: message,
+      lang: languageSelect.value || "en-IN",
+      rate: 0.9,
+      pitch: 1.0,
+      volume: 1.0,
+      queueStrategy: 0
+    });
 
-    synth.cancel();
-
-    const utterance = new SpeechSynthesisUtterance(message);
-
-    utterance.lang = languageSelect.value || "en-IN";
-    utterance.rate = 0.9;
-    utterance.pitch = 1;
-    utterance.volume = 1;
-
-    utterance.onstart = () => {
-      setStatus("SPEAKING...");
-    };
-
-    utterance.onend = () => {
-      setStatus("GREEN TICK — SPEECH COMPLETE");
-    };
-
-    utterance.onerror = (event) => {
-      setStatus("SPEECH ERROR: " + event.error);
-    };
-
-    synth.speak(utterance);
+    setStatus("GREEN TICK — SPEECH COMPLETE");
 
   } catch (error) {
-    setStatus("TTS ERROR: " + error.message);
+    console.error("Native TTS error:", error);
+
+    setStatus("TTS ERROR");
+
+    output.textContent =
+      message + " | Error: " +
+      (error?.message || String(error));
   }
 }
   
