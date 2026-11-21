@@ -146,21 +146,64 @@ const statusBox = document.getElementById("status");
 const output = document.getElementById("output");
 const reactor = document.getElementById("reactor");
 
+
+function loadVoices() {
+  const voices = window.speechSynthesis.getVoices();
+  const selector = document.getElementById("voiceSelect");
+
+  selector.innerHTML = "";
+
+  voices.forEach((voice, index) => {
+    const option = document.createElement("option");
+    option.value = index;
+    option.textContent = voice.name + " (" + voice.lang + ")";
+    selector.appendChild(option);
+  });
+}
+
 function speak(message) {
   if (!("speechSynthesis" in window)) {
-    output.textContent = message;
+    output.textContent = "Speech is not supported.";
     return;
   }
 
   window.speechSynthesis.cancel();
 
   const speech = new SpeechSynthesisUtterance(message);
+  const voices = window.speechSynthesis.getVoices();
+  const selected = document.getElementById("voiceSelect").value;
+
+  if (selected !== "" && voices[selected]) {
+    speech.voice = voices[selected];
+  }
+
   speech.lang = document.getElementById("language").value;
-  speech.rate = 0.95;
+  speech.rate = 0.88;
+  speech.pitch = 0.75;
+  speech.volume = 1;
+
+  speech.onstart = () => {
+    statusBox.textContent = "JARVIS SPEAKING...";
+  };
+
+  speech.onend = () => {
+    statusBox.textContent = "SYSTEM ONLINE";
+  };
+
+  speech.onerror = (event) => {
+    statusBox.textContent = "SPEECH ERROR: " + event.error;
+  };
 
   window.speechSynthesis.speak(speech);
 }
 
+window.speechSynthesis.onvoiceschanged = loadVoices;
+loadVoices();
+
+function testVoice() {
+  speak("Hello sir. I am JARVIS, your personal AI assistant. All systems are online.");
+  }
+  
 function startListening() {
   const SpeechRecognition =
     window.SpeechRecognition ||
@@ -226,7 +269,9 @@ function startListening() {
     output.textContent = error.message;
   }
 }
-
+<button onclick="testVoice()">
+  🔊 TEST JARVIS VOICE
+</button>
 function stopListening() {
   if (recognition) recognition.stop();
 
