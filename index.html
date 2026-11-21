@@ -823,8 +823,150 @@
       }
 
     })();
-  <script type="module">
-import { SpeechRecognition } from "@capacitor-community/speech-recognition";
-</body>
-  </html>
   
+<script type="module">
+import { SpeechRecognition } from "@capacitor-community/speech-recognition";
+
+const statusEl = document.getElementById("status");
+const transcriptEl = document.getElementById("transcript");
+const outputEl = document.getElementById("output");
+const languageEl = document.getElementById("language");
+const activateBtn = document.getElementById("activate");
+const stopBtn = document.getElementById("stop");
+const testBtn = document.getElementById("test");
+
+let listening = false;
+
+function setStatus(message) {
+  if (statusEl) statusEl.textContent = message;
+}
+
+function speak(message) {
+  if (!("speechSynthesis" in window)) return;
+  speechSynthesis.cancel();
+  const speech = new SpeechSynthesisUtterance(message);
+  speech.lang = languageEl?.value || "en-US";
+  speech.rate = 1;
+  speechSynthesis.speak(speech);
+}
+
+function getReply(command) {
+  const text = command.toLowerCase();
+
+  if (text.includes("hello") || text.includes("hi") ||
+      text.includes("नमस्ते") || text.includes("हेलो")) {
+    return "Hello! JARVIS is ready.";
+  }
+
+  if (text.includes("your name") || text.includes("who are you")) {
+    return "I am JARVIS, your personal voice assistant.";
+  }
+
+  if (text.includes("time") || text.includes("समय")) {
+    return "The time is " + new Date().toLocaleTimeString();
+  }
+
+  if (text.includes("date") || text.includes("तारीख")) {
+    return "Today's date is " + new Date().toLocaleDateString();
+  }
+
+  if (text.includes("open youtube")) {
+    window.open("https://www.youtube.com", "_blank");
+    return "Opening YouTube.";
+  }
+
+  if (text.includes("open google")) {
+    window.open("https://www.google.com", "_blank");
+    return "Opening Google.";
+  }
+
+  if (text.startsWith("search ")) {
+    const query = command.substring(7);
+    window.open(
+      "https://www.google.com/search?q=" + encodeURIComponent(query),
+      "_blank"
+    );
+    return "Searching Google for " + query;
+  }
+
+  return "I heard you say: " + command +
+    ". I am ready for more commands.";
+}
+
+async function startRecognition() {
+  try {
+    const available = await SpeechRecognition.available();
+
+    if (!available.available) {
+      setStatus("Speech recognition unavailable");
+      return;
+    }
+
+    const permission = await SpeechRecognition.checkPermissions();
+
+    if (permission.speechRecognition !== "granted") {
+      const result = await SpeechRecognition.requestPermissions();
+
+      if (result.speechRecognition !== "granted") {
+        setStatus("Microphone permission denied");
+        return;
+      }
+    }
+
+    listening = true;
+    setStatus("Listening... Speak now");
+
+    const result = await SpeechRecognition.start({
+      language: languageEl?.value || "en-US",
+      maxResults: 1,
+      popup: true,
+      partialResults: false
+    });
+
+    const words = result.matches?.[0];
+
+    if (words) {
+      if (transcriptEl) transcriptEl.textContent = words;
+
+      const reply = getReply(words);
+
+      if (outputEl) outputEl.textContent = reply;
+
+      speak(reply);
+    } else {
+      setStatus("No speech detected. Try again.");
+    }
+
+  } catch (error) {
+    console.error("JARVIS microphone error:", error);
+    setStatus("Microphone error: " + (error.message || error));
+  } finally {
+    listening = false;
+  }
+}
+
+async function stopListening() {
+  try {
+    await SpeechRecognition.stop();
+  } catch (error) {
+    console.log(error);
+  }
+
+  listening = false;
+  setStatus("Stopped");
+}
+
+activateBtn?.addEventListener("click", startRecognition);
+stopBtn?.addEventListener("click", stopListening);
+
+testBtn?.addEventListener("click", () => {
+  const message = "JARVIS system is online.";
+  if (outputEl) outputEl.textContent = message;
+  speak(message);
+});
+
+setStatus("JARVIS ready");
+</script>
+</body>
+</html>
+
